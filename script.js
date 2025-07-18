@@ -471,9 +471,16 @@ function adjustSeries(exerciseId, adjustment) {
         // Actualizar display
         document.getElementById(`series-${exerciseId}`).textContent = `${newSeries}/${exercise.series}`;
         
-        // Auto-completar si se alcanzan todas las series
+        // Auto-completar si se alcanzan todas las series (ANTES del timer)
         if (newSeries === exercise.series && !state.completed) {
+            console.log('Completando ejercicio...');
             toggleExerciseComplete(exerciseId);
+        }
+        
+        // Si es incremento (+1) y hay series completadas, iniciar contador de descanso
+        if (adjustment > 0 && newSeries > 0) {
+            console.log('Iniciando contador de descanso automáticamente...');
+            startRestTimer(exercise.rest);
         }
         
         updateProgress(currentDay);
