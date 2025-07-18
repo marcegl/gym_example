@@ -61,33 +61,24 @@
                 </div>
             </section>
 
-            <!-- Timer Global -->
-            <section class="timer-section" id="timerSection" style="display: none;">
-                <div class="timer-container">
+            <!-- Timer Flotante -->
+            <div class="floating-timer-overlay" id="floatingTimerOverlay" style="display: none;">
+                <div class="floating-timer" id="floatingTimer">
+                    <div class="floating-timer-header">
+                        <div class="timer-label" id="timerLabel">Tiempo de Descanso</div>
+                    </div>
                     <div class="timer-display" id="timerDisplay">00:00</div>
-                    <div class="timer-progress" id="timerProgress" style="display: none;">
+                    <div class="timer-progress" id="timerProgress">
                         <div class="timer-progress-bar" id="timerProgressBar"></div>
                     </div>
                     <div class="timer-controls">
-                        <button class="timer-btn start" id="startTimer">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button class="timer-btn pause" id="pauseTimer">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                        <button class="timer-btn reset" id="resetTimer">
-                            <i class="fas fa-stop"></i>
+                        <button class="finish-btn" id="finishTimer">
+                            <i class="fas fa-check"></i>
+                            Terminar Descanso
                         </button>
                     </div>
-                    <div class="timer-presets">
-                        <button class="preset-btn" data-time="60">1 min</button>
-                        <button class="preset-btn" data-time="90">1.5 min</button>
-                        <button class="preset-btn" data-time="120">2 min</button>
-                        <button class="preset-btn" data-time="180">3 min</button>
-                    </div>
-                    <div class="timer-label" id="timerLabel">Tiempo de Descanso</div>
                 </div>
-            </section>
+            </div>
 
             <!-- Rutina del Día -->
             <section class="workout-section" id="workoutSection" style="display: none;">

@@ -336,15 +336,16 @@ function setupEventListeners() {
         btn.addEventListener('click', () => selectDay(btn.dataset.day));
     });
 
-    // Controles del timer
-    document.getElementById('startTimer').addEventListener('click', startTimer);
-    document.getElementById('pauseTimer').addEventListener('click', pauseTimer);
-    document.getElementById('resetTimer').addEventListener('click', resetTimer);
-
-    // Presets del timer
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => setTimerPreset(parseInt(btn.dataset.time)));
-    });
+    // Controles del timer - configurar cuando el DOM esté listo
+    setTimeout(() => {
+        const finishBtn = document.getElementById('finishTimer');
+        if (finishBtn) {
+            finishBtn.addEventListener('click', closeFloatingTimer);
+            console.log('Event listener para finishTimer configurado');
+        } else {
+            console.log('No se encontró el botón finishTimer');
+        }
+    }, 100);
 }
 
 function selectDay(day) {
@@ -368,7 +369,6 @@ function selectDay(day) {
 }
 
 function showRestDay(day) {
-    document.getElementById('timerSection').style.display = 'none';
     document.getElementById('workoutSection').style.display = 'none';
     document.getElementById('restDaySection').style.display = 'block';
     
@@ -377,7 +377,6 @@ function showRestDay(day) {
 
 function showWorkout(day) {
     document.getElementById('restDaySection').style.display = 'none';
-    document.getElementById('timerSection').style.display = 'block';
     document.getElementById('workoutSection').style.display = 'block';
     
     document.getElementById('workoutTitle').textContent = routineData[day].name;
@@ -519,11 +518,14 @@ function startRestTimer(restTime) {
     const minSeconds = unit === 'min' ? minTime * 60 : minTime;
     const maxSeconds = unit === 'min' ? maxTime * 60 : maxTime;
     
+    // Mostrar timer flotante
+    showFloatingTimer();
+    
     // Configurar timer con rangos
     setTimerWithRange(minSeconds, maxSeconds, restTime);
-    startTimer();
     
-    document.getElementById('timerLabel').textContent = `Descanso - ${restTime}`;
+    // Iniciar automáticamente
+    startTimer();
 }
 
 function setTimerPreset(seconds) {
@@ -534,7 +536,6 @@ function setTimerPreset(seconds) {
     timer.currentPhase = 'waiting';
     updateTimerDisplay();
     updateTimerColors();
-    showTimerProgress(false);
 }
 
 function setTimerWithRange(minSeconds, maxSeconds, restTimeText) {
@@ -546,8 +547,37 @@ function setTimerWithRange(minSeconds, maxSeconds, restTimeText) {
     updateTimerDisplay();
     updateTimerPhaseDisplay(restTimeText);
     updateTimerColors();
-    showTimerProgress(true);
     updateTimerProgress();
+}
+
+function showFloatingTimer() {
+    document.getElementById('floatingTimerOverlay').style.display = 'flex';
+}
+
+function closeFloatingTimer() {
+    console.log('Cerrando timer flotante...');
+    
+    // Parar el timer
+    if (timer.interval) {
+        clearInterval(timer.interval);
+        timer.interval = null;
+    }
+    timer.isRunning = false;
+    
+    // Resetear valores
+    timer.seconds = 0;
+    timer.currentPhase = 'waiting';
+    timer.minSeconds = 0;
+    timer.maxSeconds = 0;
+    
+    // Ocultar overlay
+    const overlay = document.getElementById('floatingTimerOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+        console.log('Timer cerrado correctamente');
+    } else {
+        console.log('No se encontró el overlay');
+    }
 }
 
 function startTimer() {
@@ -616,7 +646,6 @@ function resetTimer() {
     updateTimerDisplay();
     updateTimerColors();
     updateTimerProgress();
-    document.getElementById('timerLabel').textContent = 'Tiempo de Descanso';
 }
 
 function updateTimerDisplay() {
@@ -635,32 +664,36 @@ function updateTimerDisplay() {
 
 function updateTimerColors() {
     const timerDisplay = document.getElementById('timerDisplay');
-    const timerContainer = document.querySelector('.timer-container');
+    const timerContainer = document.querySelector('.floating-timer');
     
     // Remover clases anteriores
     timerDisplay.classList.remove('timer-active', 'timer-optimal', 'timer-exceeded');
-    timerContainer.classList.remove('timer-active', 'timer-optimal', 'timer-exceeded');
+    if (timerContainer) {
+        timerContainer.classList.remove('timer-active', 'timer-optimal', 'timer-exceeded');
+    }
     
     // Agregar clase según la fase actual
     timerDisplay.classList.add(`timer-${timer.currentPhase}`);
-    timerContainer.classList.add(`timer-${timer.currentPhase}`);
+    if (timerContainer) {
+        timerContainer.classList.add(`timer-${timer.currentPhase}`);
+    }
 }
 
 function updateTimerPhaseDisplay(restTimeText) {
     const label = document.getElementById('timerLabel');
-    const minMinutes = Math.floor(timer.minSeconds / 60);
-    const maxMinutes = Math.floor(timer.maxSeconds / 60);
     
     if (timer.minSeconds === timer.maxSeconds) {
         label.textContent = `Descanso - ${restTimeText}`;
     } else {
-        label.textContent = `Descanso - ${restTimeText} (Min: ${minMinutes}min, Max: ${maxMinutes}min)`;
+        const minUnit = timer.minSeconds >= 60 ? `${Math.floor(timer.minSeconds / 60)}min` : `${timer.minSeconds}seg`;
+        const maxUnit = timer.maxSeconds >= 60 ? `${Math.floor(timer.maxSeconds / 60)}min` : `${timer.maxSeconds}seg`;
+        label.textContent = `Descanso ${minUnit} - ${maxUnit}`;
     }
 }
 
 function showPhaseNotification(message, type) {
     const notification = document.createElement('div');
-    const bgColor = type === 'success' ? 'var(--success-color)' : 'var(--warning-color)';
+    const bgColor = type === 'success' ? '#f39c12' : '#e74c3c';
     const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
     
     notification.style.cssText = `
@@ -686,10 +719,7 @@ function showPhaseNotification(message, type) {
     }, 4000);
 }
 
-function showTimerProgress(show) {
-    const progressElement = document.getElementById('timerProgress');
-    progressElement.style.display = show ? 'block' : 'none';
-}
+
 
 function updateTimerProgress() {
     const progressBar = document.getElementById('timerProgressBar');
